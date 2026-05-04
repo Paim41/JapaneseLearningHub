@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日本語 Japanese Learning Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C8102E;
+    --red-dark: #9b0c22;
+    --red-light: #e8304a;
+    --red-pale: #fde8ec;
+    --white: #FAFAF8;
+    --cream: #F5F0EA;
+    --ink: #1a1008;
+    --ink-light: #4a3828;
+    --gray: #8a7a6a;
+    --gray-light: #e8e0d8;
+    --gold: #c49a1a;
+    --shadow: 0 4px 24px rgba(200,16,46,0.10);
+    --shadow-lg: 0 12px 48px rgba(200,16,46,0.15);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  #sakura-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(250,250,248,0.90);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(200,16,46,0.12);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1.25rem;
+    color: var(--red);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .nav-logo .logo-icon { color: var(--red); }
+  .nav-logo span { font-size: 0.85rem; color: var(--gray); font-family: 'DM Sans', sans-serif; font-weight: 400; }
+  .nav-links { display: flex; gap: 0.25rem; align-items: center; }
+  .nav-btn {
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--ink-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover, .nav-btn.active { background: var(--red-pale); color: var(--red); }
+  .nav-btn.cta { background: var(--red); color: white; padding: 0.4rem 1rem; }
+  .nav-btn.cta:hover { background: var(--red-dark); color: white; }
+  .dark-toggle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gray-light);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .dark-toggle:hover { border-color: var(--red); }
+
+  body.dark {
+    --cream: #141010;
+    --white: #1e1818;
+    --ink: #f0e8e0;
+    --ink-light: #c8b8a8;
+    --gray: #8a7a6a;
+    --gray-light: #2e2420;
+    --red-pale: #3a0a14;
+    --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  body.dark nav { background: rgba(20,16,16,0.92); }
+
+  .page { display: none; min-height: 100vh; padding-top: 64px; position: relative; z-index: 1; }
+  .page.active { display: block; }
+
+  .hero {
+    min-height: calc(100vh - 64px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-circle {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,16,46,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.08); } }
+
+  .hero-kanji {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(5rem, 15vw, 10rem);
+    color: rgba(200,16,46,0.08);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    letter-spacing: 0.2em;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--red-pale);
+    color: var(--red);
+    border: 1px solid rgba(200,16,46,0.2);
+    border-radius: 100px;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    animation: fadeDown 0.6s ease both;
+  }
+  .hero h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+  .hero h1 em { color: var(--red); font-style: normal; }
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--ink-light);
+    max-width: 540px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    animation: fadeDown 0.6s 0.2s ease both;
+  }
+  .hero-buttons {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    animation: fadeDown 0.6s 0.3s ease both;
+  }
+  .btn-primary {
+    padding: 0.85rem 2rem;
+    background: var(--red);
+    color: white;
+    border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(200,16,46,0.3);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,16,46,0.35); }
+  .btn-secondary {
+    padding: 0.85rem 2rem;
+    background: var(--white);
+    color: var(--ink);
+    border: 1.5px solid var(--gray-light);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-secondary:hover { border-color: var(--red); color: var(--red); transform: translateY(-2px); }
+
+  .stats-row {
+    display: flex; gap: 2.5rem; margin-top: 3rem; flex-wrap: wrap; justify-content: center;
+    animation: fadeDown 0.6s 0.4s ease both;
+  }
+  .stat { text-align: center; }
+  .stat strong { display: block; font-size: 1.75rem; font-weight: 700; color: var(--red); font-family: 'Shippori Mincho', serif; }
+  .stat span { font-size: 0.8rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+  .section-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 2rem;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .section-title::before {
+    content: '';
+    display: block;
+    width: 4px; height: 1.8rem;
+    background: var(--red);
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .section-sub { color: var(--gray); margin-bottom: 2.5rem; font-size: 0.95rem; }
+
+  /* SPEAK HINT BANNER */
+  .speak-hint-banner {
+    background: linear-gradient(135deg, rgba(200,16,46,0.06), rgba(200,16,46,0.02));
+    border: 1px solid rgba(200,16,46,0.15);
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    color: var(--ink-light);
+  }
+  .speak-hint-banner svg { color: var(--red); flex-shrink: 0; }
+
+  .chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+  .chapter-card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--gray-light);
+    overflow: hidden;
+    transition: all 0.25s;
+  }
+  .chapter-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+  .chapter-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    user-select: none;
+  }
+  .chapter-header-left { display: flex; align-items: center; gap: 0.75rem; }
+  .chapter-header-icon { flex-shrink: 0; opacity: 0.9; }
+  .chapter-header h3 { font-size: 1.1rem; font-weight: 600; }
+  .chapter-header .week-label { font-size: 0.75rem; opacity: 0.8; margin-top: 0.2rem; }
+  .chevron { transition: transform 0.3s; flex-shrink: 0; }
+  .chapter-header.open .chevron { transform: rotate(180deg); }
+  .chapter-body { padding: 1.5rem; display: none; }
+  .chapter-body.open { display: block; }
+
+  .subsection { margin-bottom: 1.5rem; }
+  .subsection-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--red-pale);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .subsection-icon { flex-shrink: 0; }
+
+  /* PHRASE LIST — clickable speak */
+  .phrase-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+  .phrase-item {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    background: var(--cream);
+    gap: 1rem;
+    transition: background 0.15s, transform 0.15s;
+    cursor: pointer;
+    position: relative;
+  }
+  .phrase-item:hover { background: var(--red-pale); transform: translateX(2px); }
+  .phrase-item:active { transform: scale(0.98); }
+  .phrase-item.speaking {
+    background: var(--red-pale);
+    outline: 2px solid var(--red);
+    outline-offset: -2px;
+  }
+
+  .phrase-left { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+  .phrase-jp { font-family: 'Noto Serif JP', serif; font-weight: 600; color: var(--ink); font-size: 0.9rem; }
+  .phrase-roman { font-size: 0.75rem; color: var(--red); font-style: italic; margin-top: 1px; letter-spacing: 0.02em; }
+  .phrase-en { color: var(--gray); font-size: 0.85rem; text-align: right; flex-shrink: 0; align-self: center; }
+
+  /* Speaker icon on phrase items */
+  .speak-icon {
+    position: absolute; right: 0.5rem; top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.15s;
+    color: var(--red);
+    pointer-events: none;
+  }
+  .phrase-item:hover .speak-icon,
+  .phrase-item.speaking .speak-icon { opacity: 1; }
+  .phrase-item.speaking .speak-icon { animation: speakPulse 0.6s ease-in-out infinite alternate; }
+  @keyframes speakPulse { from { opacity: 0.5; transform: translateY(-50%) scale(0.9); } to { opacity: 1; transform: translateY(-50%) scale(1.1); } }
+
+  .memory-tip {
+    background: linear-gradient(135deg, #fff8e1, #fef3c7);
+    border: 1px solid #f59e0b40;
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: #78350f;
+    display: flex; align-items: flex-start; gap: 0.5rem;
+  }
+  .tip-icon { flex-shrink: 0; margin-top: 1px; }
+  .memory-tip strong { color: #92400e; }
+
+  .hiragana-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+  .hira-cell {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid var(--gray-light);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .hira-cell:hover { background: var(--red-pale); border-color: var(--red); transform: scale(1.05); }
+  .hira-cell:active { transform: scale(0.97); }
+  .hira-cell.speaking { background: var(--red-pale); border-color: var(--red); outline: 2px solid var(--red); }
+  .hira-char { font-family: 'Noto Serif JP', serif; font-size: 1.2rem; color: var(--ink); display: block; }
+  .hira-roman { font-size: 0.7rem; color: var(--gray); }
+
+  /* FLASHCARDS */
+  .flashcard-controls {
+    display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; align-items: center;
+  }
+  .filter-btn {
+    padding: 0.45rem 1rem;
+    border-radius: 100px;
+    border: 1.5px solid var(--gray-light);
+    background: transparent;
+    color: var(--ink-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .filter-btn:hover, .filter-btn.active { background: var(--red); border-color: var(--red); color: white; }
+
+  .flashcard-arena { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
+  .flashcard-counter { color: var(--gray); font-size: 0.9rem; }
+  .flashcard-progress-bar {
+    width: 300px; height: 4px;
+    background: var(--gray-light);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .flashcard-progress-fill { height: 100%; background: var(--red); border-radius: 4px; transition: width 0.3s; }
+
+  .flashcard-wrap { perspective: 1000px; width: 100%; max-width: 480px; height: 280px; cursor: pointer; }
+  .flashcard {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .card-front {
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+    color: white;
+  }
+  .card-back {
+    background: var(--white);
+    color: var(--ink);
+    transform: rotateY(180deg);
+    border: 1.5px solid var(--gray-light);
+  }
+  .card-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.7; margin-bottom: 1rem; }
+  .card-jp { font-family: 'Noto Serif JP', serif; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .card-hint { font-size: 0.8rem; opacity: 0.75; display: flex; align-items: center; gap: 0.4rem; justify-content: center; }
+  .card-meaning { font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.5rem; }
+  .card-tip { font-size: 0.82rem; color: var(--gray); background: var(--cream); border-radius: 8px; padding: 0.6rem 0.9rem; margin-top: 0.75rem; }
+
+  /* Speak button on flashcard */
+  .card-speak-btn {
+    margin-top: 0.75rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 0.4rem;
+    transition: all 0.2s;
+  }
+  .card-speak-btn:hover { background: rgba(255,255,255,0.25); }
+  .card-speak-btn.back-speak {
+    border-color: var(--red);
+    background: var(--red-pale);
+    color: var(--red);
+  }
+  .card-speak-btn.back-speak:hover { background: var(--red); color: white; }
+
+  .flashcard-actions { display: flex; gap: 1rem; }
+  .fc-btn {
+    padding: 0.65rem 1.5rem;
+    border-radius: 10px;
+    border: 1.5px solid;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .fc-btn.know { border-color: #16a34a; color: #16a34a; background: transparent; }
+  .fc-btn.know:hover { background: #16a34a; color: white; }
+  .fc-btn.later { border-color: var(--gray); color: var(--gray); background: transparent; }
+  .fc-btn.later:hover { background: var(--gray); color: white; }
+  .fc-btn.next { border-color: var(--red); color: var(--red); background: transparent; }
+  .fc-btn.next:hover { background: var(--red); color: white; }
+
+  .fc-stats { display: flex; gap: 1.5rem; font-size: 0.85rem; }
+  .fc-stat { display: flex; align-items: center; gap: 0.4rem; }
+  .fc-stat .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-know { background: #16a34a; }
+  .dot-later { background: #f59e0b; }
+
+  /* QUIZ */
+  .quiz-setup { max-width: 600px; margin: 0 auto; }
+  .quiz-option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .quiz-opt-btn {
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+    border: 1.5px solid var(--gray-light);
+    background: var(--white);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .quiz-opt-btn:hover, .quiz-opt-btn.selected { border-color: var(--red); background: var(--red-pale); }
+  .quiz-opt-btn strong { display: block; font-size: 1rem; color: var(--ink); margin-bottom: 0.25rem; }
+  .quiz-opt-btn span { font-size: 0.78rem; color: var(--gray); }
+
+  .quiz-arena { max-width: 700px; margin: 0 auto; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .quiz-progress-text { font-size: 0.9rem; color: var(--gray); }
+  .timer-badge {
+    background: var(--red-pale);
+    color: var(--red);
+    font-weight: 700;
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .quiz-bar { height: 4px; background: var(--gray-light); border-radius: 4px; margin-bottom: 2rem; overflow: hidden; }
+  .quiz-bar-fill { height: 100%; background: var(--red); border-radius: 4px; transition: width 0.4s; }
+
+  .question-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--gray-light);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .question-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--red); margin-bottom: 0.75rem; }
+  .question-text { font-size: 1.2rem; font-weight: 600; color: var(--ink); line-height: 1.5; }
+  .question-text .jp { font-family: 'Noto Serif JP', serif; font-size: 1.5rem; color: var(--red); display: block; margin-top: 0.5rem; cursor: pointer; transition: opacity 0.2s; }
+  .question-text .jp:hover { opacity: 0.7; }
+
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .option-btn {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    border: 1.5px solid var(--gray-light);
+    background: var(--white);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    text-align: left;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.75rem;
+    font-weight: 500;
+  }
+  .option-btn .opt-label {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--cream);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--gray);
+    border: 1px solid var(--gray-light);
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--red); background: var(--red-pale); }
+  .option-btn:hover:not(:disabled) .opt-label { background: var(--red); color: white; border-color: var(--red); }
+  .option-btn.correct { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+  .option-btn.correct .opt-label { background: #16a34a; color: white; border-color: #16a34a; }
+  .option-btn.wrong { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+  .option-btn.wrong .opt-label { background: #dc2626; color: white; border-color: #dc2626; }
+  .option-btn:disabled { cursor: default; }
+
+  .feedback-box {
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .feedback-box.show { display: flex; }
+  .feedback-box.correct { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+  .feedback-box.wrong { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+
+  .quiz-nav { display: flex; justify-content: flex-end; margin-top: 1.5rem; }
+
+  .results-card {
+    max-width: 560px; margin: 0 auto;
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid var(--gray-light);
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .score-circle {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(var(--red) var(--pct), var(--gray-light) 0);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    position: relative;
+  }
+  .score-circle::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    background: var(--white);
+    border-radius: 50%;
+  }
+  .score-inner {
+    position: relative; z-index: 1;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 2rem; font-weight: 700;
+    color: var(--red);
+  }
+  .results-title { font-family: 'Shippori Mincho', serif; font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--ink); }
+  .results-sub { color: var(--gray); margin-bottom: 2rem; }
+  .results-breakdown { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 2rem; }
+  .rb-item { text-align: center; }
+  .rb-item strong { display: block; font-size: 1.5rem; font-weight: 700; }
+  .rb-item span { font-size: 0.78rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; }
+  .rb-correct strong { color: #16a34a; }
+  .rb-wrong strong { color: #dc2626; }
+  .performance-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 100px;
+    font-size: 0.9rem; font-weight: 600;
+    margin-bottom: 2rem;
+  }
+  .perf-excellent { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+  .perf-good { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .perf-average { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .perf-poor { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+  .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+  .dash-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--gray-light);
+    box-shadow: var(--shadow);
+  }
+  .dash-card-title {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .dash-card h3 { font-size: 2rem; font-weight: 700; color: var(--red); font-family: 'Shippori Mincho', serif; }
+  .progress-bar { height: 8px; background: var(--gray-light); border-radius: 100px; margin: 0.75rem 0 0.5rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--red); border-radius: 100px; transition: width 1s ease; }
+  .progress-fill.green { background: #16a34a; }
+  .progress-fill.gold { background: var(--gold); }
+
+  .chapter-progress-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .cp-item { display: flex; align-items: center; gap: 1rem; }
+  .cp-item label { flex: 1; font-size: 0.9rem; color: var(--ink-light); }
+  .cp-item .cp-bar { flex: 2; height: 6px; background: var(--gray-light); border-radius: 100px; overflow: hidden; }
+  .cp-item .cp-fill { height: 100%; background: var(--red); border-radius: 100px; transition: width 1s; }
+  .cp-item .cp-pct { width: 36px; text-align: right; font-size: 0.8rem; color: var(--gray); font-weight: 600; }
+
+  .score-history { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+  .sh-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--gray-light); font-size: 0.88rem; }
+  .sh-item:last-child { border-bottom: none; }
+  .sh-score { font-weight: 700; color: var(--red); }
+
+  .streak-display { display: flex; align-items: center; gap: 1rem; }
+  .streak-icon { color: var(--red); }
+  .streak-info strong { display: block; font-size: 1.75rem; font-weight: 700; color: var(--red); }
+  .streak-info span { font-size: 0.8rem; color: var(--gray); }
+
+  .search-bar-wrap { position: relative; max-width: 600px; margin: 0 auto 2rem; }
+  .search-bar {
+    width: 100%;
+    padding: 0.9rem 1rem 0.9rem 3rem;
+    border-radius: 12px;
+    border: 1.5px solid var(--gray-light);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-bar:focus { border-color: var(--red); }
+  .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray); }
+  .search-results { display: flex; flex-direction: column; gap: 0.5rem; }
+  .search-result-item {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--gray-light);
+    display: flex; justify-content: space-between; align-items: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .search-result-item:hover { border-color: var(--red); background: var(--red-pale); }
+  .sr-jp { font-family: 'Noto Serif JP', serif; font-weight: 600; color: var(--ink); }
+  .sr-roman { font-size: 0.75rem; color: var(--red); font-style: italic; }
+  .sr-en { color: var(--gray); font-size: 0.9rem; }
+  .sr-tag { font-size: 0.72rem; background: var(--red-pale); color: var(--red); padding: 0.2rem 0.5rem; border-radius: 100px; font-weight: 600; }
+
+  .mode-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+  .mode-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 1.75rem;
+    border: 1.5px solid var(--gray-light);
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+  }
+  .mode-card:hover { border-color: var(--red); box-shadow: var(--shadow); transform: translateY(-3px); }
+  .mode-icon { display: flex; justify-content: center; margin-bottom: 1rem; color: var(--red); }
+  .mode-card h4 { font-size: 1.05rem; font-weight: 600; color: var(--ink); margin-bottom: 0.4rem; }
+  .mode-card p { font-size: 0.82rem; color: var(--gray); line-height: 1.5; }
+
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.7);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    position: relative; z-index: 1;
+  }
+  .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; display: flex; align-items: center; gap: 0.4rem; }
+  .footer-links a:hover { color: var(--red-light); }
+  footer p { font-size: 0.82rem; }
+
+  .hidden { display: none !important; }
+  .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.55rem; border-radius: 6px; margin-bottom: 0.5rem; }
+  .tag-red { background: var(--red-pale); color: var(--red); }
+  .tag-green { background: #dcfce7; color: #15803d; }
+  .tag-gold { background: #fef9c3; color: #854d0e; }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .options-grid { grid-template-columns: 1fr; }
+    .quiz-option-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 1.5rem; }
+    .section { padding: 2rem 1rem; }
+  }
+
+  #toast {
+    position: fixed; bottom: 2rem; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink); color: white;
+    padding: 0.75rem 1.5rem; border-radius: 10px;
+    font-size: 0.9rem; font-weight: 500;
+    z-index: 9999; transition: transform 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    pointer-events: none;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  .mobile-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--gray-light);
+    padding: 0.5rem;
+    z-index: 100;
+    gap: 0.25rem;
+  }
+  @media (max-width: 640px) {
+    .mobile-nav { display: flex; }
+    body { padding-bottom: 70px; }
+  }
+  .mob-nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    padding: 0.5rem; border: none; background: transparent;
+    cursor: pointer; border-radius: 8px; transition: background 0.2s;
+  }
+  .mob-nav-btn.active { background: var(--red-pale); }
+  .mob-nav-btn span { font-size: 0.65rem; color: var(--gray); font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .mob-nav-btn.active span { color: var(--red); }
+  .mob-nav-btn svg { color: var(--gray); }
+  .mob-nav-btn.active svg { color: var(--red); }
+
+  .exam-focus-banner {
+    background: linear-gradient(135deg, var(--red), var(--red-dark));
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: flex; align-items: flex-start; gap: 1rem;
+  }
+  .exam-focus-banner .banner-icon { flex-shrink: 0; margin-top: 2px; }
+  .exam-focus-banner strong { display: block; font-size: 0.9rem; }
+  .exam-focus-banner span { font-size: 0.8rem; opacity: 0.85; }
+
+  .keyword { background: var(--red-pale); color: var(--red); border-radius: 4px; padding: 0 3px; font-weight: 600; }
+  .icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* Speaking indicator toast-style */
+  #speak-indicator {
+    position: fixed; top: 80px; right: 1.5rem;
+    background: var(--red);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    z-index: 9998;
+    display: flex; align-items: center; gap: 0.4rem;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(200,16,46,0.3);
+  }
+  #speak-indicator.show { opacity: 1; transform: translateY(0); }
+  .speak-dot { width: 6px; height: 6px; border-radius: 50%; background: white; animation: dotPulse 0.8s ease-in-out infinite; }
+  @keyframes dotPulse { 0%,100%{ opacity:1;transform:scale(1); } 50%{ opacity:0.4;transform:scale(0.7); } }
+</style>
+</head>
+<body>
+<canvas id="sakura-canvas"></canvas>
+<div id="toast"></div>
+<div id="speak-indicator">
+  <div class="speak-dot"></div>
+  <span id="speak-indicator-text">Speaking...</span>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="navigate('home')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" class="logo-icon">
+      <circle cx="12" cy="12" r="2"/>
+      <ellipse cx="12" cy="6" rx="2" ry="3.5" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+      <ellipse cx="12" cy="18" rx="2" ry="3.5" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+      <ellipse cx="6" cy="12" rx="3.5" ry="2" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+      <ellipse cx="18" cy="12" rx="3.5" ry="2" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+      <ellipse cx="7.76" cy="7.76" rx="2" ry="3.5" transform="rotate(45 7.76 7.76)" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+      <ellipse cx="16.24" cy="16.24" rx="2" ry="3.5" transform="rotate(45 16.24 16.24)" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+      <ellipse cx="16.24" cy="7.76" rx="2" ry="3.5" transform="rotate(-45 16.24 7.76)" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+      <ellipse cx="7.76" cy="16.24" rx="2" ry="3.5" transform="rotate(-45 7.76 16.24)" fill="rgba(200,16,46,0.15)" stroke="var(--red)"/>
+    </svg>
+    <span>日本語</span> JLH
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="navigate('home')" id="nav-home">Home</button>
+    <button class="nav-btn" onclick="navigate('notes')" id="nav-notes">Notes</button>
+    <button class="nav-btn" onclick="navigate('flashcards')" id="nav-flashcards">Flashcards</button>
+    <button class="nav-btn" onclick="navigate('quiz')" id="nav-quiz">Quiz</button>
+    <button class="nav-btn" onclick="navigate('dashboard')" id="nav-dashboard">Dashboard</button>
+    <button class="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">
+      <svg id="dark-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav">
+  <button class="mob-nav-btn active" onclick="navigate('home')" id="mob-home">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="mob-nav-btn" onclick="navigate('notes')" id="mob-notes">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span>Notes</span>
+  </button>
+  <button class="mob-nav-btn" onclick="navigate('flashcards')" id="mob-flashcards">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+    <span>Cards</span>
+  </button>
+  <button class="mob-nav-btn" onclick="navigate('quiz')" id="mob-quiz">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>Quiz</span>
+  </button>
+  <button class="mob-nav-btn" onclick="navigate('dashboard')" id="mob-dashboard">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span>Progress</span>
+  </button>
+</div>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-circle"></div>
+    <div class="hero-kanji">日本語</div>
+    <div class="hero-badge">
+      <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="var(--red)"/></svg>
+      3 Chapters · 100+ Phrases · Interactive Quiz
+    </div>
+    <h1>Japanese <em>Learning Hub</em></h1>
+    <p>Master Japanese phrases, hiragana, grammar and vocabulary through beautiful flashcards, smart quizzes, and structured notes. <strong>Click any word to hear it spoken!</strong></p>
+    <div class="hero-buttons">
+      <button class="btn-primary" onclick="navigate('notes')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Start Learning
+      </button>
+      <button class="btn-secondary" onclick="navigate('quiz')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Take Quiz
+      </button>
+      <button class="btn-secondary" onclick="navigate('flashcards')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Flashcards
+      </button>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><strong>3</strong><span>Chapters</span></div>
+      <div class="stat"><strong>120+</strong><span>Phrases</span></div>
+      <div class="stat"><strong>46</strong><span>Hiragana</span></div>
+      <div class="stat"><strong>30+</strong><span>Quiz Q's</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Study Modes</div>
+    <p class="section-sub">Pick your style of learning</p>
+    <div class="mode-cards">
+      <div class="mode-card" onclick="startQuickRevision()">
+        <div class="mode-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <h4>Quick Revision</h4>
+        <p>Rapid-fire key phrases and vocab — perfect for a 5-minute review.</p>
+      </div>
+      <div class="mode-card" onclick="startExamFocus()">
+        <div class="mode-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <h4>Exam Focus Mode</h4>
+        <p>High-priority items flagged for exams. Drill until confident.</p>
+      </div>
+      <div class="mode-card" onclick="navigate('flashcards')">
+        <div class="mode-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+        <h4>Flashcard Drill</h4>
+        <p>Flip cards with spaced-repetition logic. Mark known vs. review later.</p>
+      </div>
+      <div class="mode-card" onclick="startRandomQuiz()">
+        <div class="mode-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="16" y="16" width="5" height="5" rx="1"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <h4>Random Quiz</h4>
+        <p>Randomly generated quiz across all chapters for surprise practice.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES PAGE -->
+<div class="page" id="page-notes">
+  <div class="section">
+    <div class="section-title">Chapter Notes</div>
+    <p class="section-sub">Click any chapter to expand and study</p>
+
+    <div class="speak-hint-banner">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      <span><strong>Pronunciation:</strong> Click on any word or phrase to hear it spoken aloud. Try it!</span>
+    </div>
+
+    <div class="search-bar-wrap">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-bar" type="text" placeholder="Search phrases, words..." oninput="searchContent(this.value)" id="search-input">
+    </div>
+    <div class="search-results" id="search-results"></div>
+
+    <div class="chapter-grid" id="notes-main">
+
+      <!-- WEEK 1: Classroom -->
+      <div class="chapter-card">
+        <div class="chapter-header" onclick="toggleChapter(this)">
+          <div class="chapter-header-left">
+            <svg class="chapter-header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div><div class="week-label">Week 1</div><h3>Classroom Phrases</h3></div>
+          </div>
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="chapter-body">
+          <div class="subsection">
+            <div class="subsection-title">
+              <svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Start / End (～ましょう)
+            </div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Hajimemashou')"><div class="phrase-left"><span class="phrase-jp">Hajimemashou</span></div><span class="phrase-en">Let's start</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Owarimashou')"><div class="phrase-left"><span class="phrase-jp">Owarimashou</span></div><span class="phrase-en">Let's finish</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Tsuzukemashou')"><div class="phrase-left"><span class="phrase-jp">Tsuzukemashou</span></div><span class="phrase-en">Let's continue</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Chotto yasumimashou')"><div class="phrase-left"><span class="phrase-jp">Chotto yasumimashou</span></div><span class="phrase-en">Take a break</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><strong>Memory tip:</strong> All end with <span class="keyword">-mashou</span> = "let's do something"</span></div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title">
+              <svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              Basic Instructions (～kudasai)
+            </div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Tatte kudasai')"><div class="phrase-left"><span class="phrase-jp">Tatte kudasai</span></div><span class="phrase-en">Stand up</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Suwatte kudasai')"><div class="phrase-left"><span class="phrase-jp">Suwatte kudasai</span></div><span class="phrase-en">Sit down</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Shizuka ni shite kudasai')"><div class="phrase-left"><span class="phrase-jp">Shizuka ni shite kudasai</span></div><span class="phrase-en">Be quiet</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Chotto matte kudasai')"><div class="phrase-left"><span class="phrase-jp">Chotto matte kudasai</span></div><span class="phrase-en">Wait a moment</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><strong>Memory tip:</strong> <span class="keyword">kudasai</span> = "please"</span></div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title">
+              <svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Speaking Practice
+            </div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Mou ichido onegaishimasu')"><div class="phrase-left"><span class="phrase-jp">Mou ichido onegaishimasu</span></div><span class="phrase-en">Repeat again</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Ookii koe de itte kudasai')"><div class="phrase-left"><span class="phrase-jp">Ookii koe de itte kudasai</span></div><span class="phrase-en">Speak loudly</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Yukkuri itte kudasai')"><div class="phrase-left"><span class="phrase-jp">Yukkuri itte kudasai</span></div><span class="phrase-en">Speak slowly</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Isshoni itte kudasai')"><div class="phrase-left"><span class="phrase-jp">Isshoni itte kudasai</span></div><span class="phrase-en">Say together</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title">
+              <svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Actions in Class
+            </div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Itte kudasai')"><div class="phrase-left"><span class="phrase-jp">Itte kudasai</span></div><span class="phrase-en">Say</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Yonde kudasai')"><div class="phrase-left"><span class="phrase-jp">Yonde kudasai</span></div><span class="phrase-en">Read</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Kaite kudasai')"><div class="phrase-left"><span class="phrase-jp">Kaite kudasai</span></div><span class="phrase-en">Write</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Kiite kudasai')"><div class="phrase-left"><span class="phrase-jp">Kiite kudasai</span></div><span class="phrase-en">Listen</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Mite kudasai')"><div class="phrase-left"><span class="phrase-jp">Mite kudasai</span></div><span class="phrase-en">Look</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Oboete kudasai')"><div class="phrase-left"><span class="phrase-jp">Oboete kudasai</span></div><span class="phrase-en">Remember</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title">
+              <svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Questions in Class
+            </div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Wakarimashita ka')"><div class="phrase-left"><span class="phrase-jp">Wakarimashita ka?</span></div><span class="phrase-en">Do you understand?</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Shitsumon ga arimasu ka')"><div class="phrase-left"><span class="phrase-jp">Shitsumon ga arimasu ka?</span></div><span class="phrase-en">Any questions?</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('peeji o akete kudasai')"><div class="phrase-left"><span class="phrase-jp">~peeji o akete kudasai</span></div><span class="phrase-en">Open page ~</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Shukudai o dashite kudasai')"><div class="phrase-left"><span class="phrase-jp">Shukudai o dashite kudasai</span></div><span class="phrase-en">Submit homework</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="memory-tip" style="margin-top:1rem;">
+            <svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span><strong>Super Quick:</strong> <span class="keyword">kudasai</span> = please · <span class="keyword">mashou</span> = let's · <span class="keyword">gozaimasu</span> = polite/formal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEK 1: Greetings -->
+      <div class="chapter-card">
+        <div class="chapter-header" onclick="toggleChapter(this)">
+          <div class="chapter-header-left">
+            <svg class="chapter-header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            <div><div class="week-label">Week 1</div><h3>Daily Greetings</h3></div>
+          </div>
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="chapter-body">
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>Time-Based Greetings</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Ohayou gozaimasu')"><div class="phrase-left"><span class="phrase-jp">Ohayou gozaimasu</span></div><span class="phrase-en">Good morning</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Konnichiwa')"><div class="phrase-left"><span class="phrase-jp">Konnichiwa</span></div><span class="phrase-en">Good afternoon</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Konbanwa')"><div class="phrase-left"><span class="phrase-jp">Konbanwa</span></div><span class="phrase-en">Good evening</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Oyasuminasai')"><div class="phrase-left"><span class="phrase-jp">Oyasuminasai</span></div><span class="phrase-en">Good night</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Morning = <span class="keyword">Ohayou</span>, Night = <span class="keyword">Oyasumi</span></span></div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>First Meeting</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Hajimemashite')"><div class="phrase-left"><span class="phrase-jp">Hajimemashite</span></div><span class="phrase-en">Nice to meet you</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Douzo yoroshiku')"><div class="phrase-left"><span class="phrase-jp">Douzo yoroshiku</span></div><span class="phrase-en">Please treat me well</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Ogenki desu ka')"><div class="phrase-left"><span class="phrase-jp">Ogenki desu ka?</span></div><span class="phrase-en">How are you?</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Genki desu')"><div class="phrase-left"><span class="phrase-jp">Genki desu</span></div><span class="phrase-en">I'm fine</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Polite Expressions</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Onegaishimasu')"><div class="phrase-left"><span class="phrase-jp">Onegaishimasu</span></div><span class="phrase-en">Please</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Arigatou gozaimasu')"><div class="phrase-left"><span class="phrase-jp">Arigatou gozaimasu</span></div><span class="phrase-en">Thank you</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Douitashimashite')"><div class="phrase-left"><span class="phrase-jp">Douitashimashite</span></div><span class="phrase-en">You're welcome</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Sumimasen')"><div class="phrase-left"><span class="phrase-jp">Sumimasen</span></div><span class="phrase-en">Excuse me</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Gomennasai')"><div class="phrase-left"><span class="phrase-jp">Gomennasai</span></div><span class="phrase-en">Sorry</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Omedetou gozaimasu')"><div class="phrase-left"><span class="phrase-jp">Omedetou gozaimasu</span></div><span class="phrase-en">Congratulations</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Ganbatte kudasai')"><div class="phrase-left"><span class="phrase-jp">Ganbatte kudasai</span></div><span class="phrase-en">Good luck</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Goodbyes</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Ja mata')"><div class="phrase-left"><span class="phrase-jp">Ja mata / Dewa mata</span></div><span class="phrase-en">See you</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Sayounara')"><div class="phrase-left"><span class="phrase-jp">Sayounara</span></div><span class="phrase-en">Goodbye</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Leaving &amp; Returning Home</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Ittekimasu')"><div class="phrase-left"><span class="phrase-jp">Ittekimasu</span></div><span class="phrase-en">I'm leaving</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Itterasshai')"><div class="phrase-left"><span class="phrase-jp">Itterasshai</span></div><span class="phrase-en">Take care (to someone leaving)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Tadaima')"><div class="phrase-left"><span class="phrase-jp">Tadaima</span></div><span class="phrase-en">I'm back</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Okaerinasai')"><div class="phrase-left"><span class="phrase-jp">Okaerinasai</span></div><span class="phrase-en">Welcome back</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>Food Customs</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Itadakimasu')"><div class="phrase-left"><span class="phrase-jp">Itadakimasu</span></div><span class="phrase-en">Before eating</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Gochisousama deshita')"><div class="phrase-left"><span class="phrase-jp">Gochisousama deshita</span></div><span class="phrase-en">After eating</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Japanese always show <span class="keyword">respect for food</span> — both phrases are culturally essential!</span></div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Care &amp; Concern</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Daijoubu desu ka')"><div class="phrase-left"><span class="phrase-jp">Daijoubu desu ka?</span></div><span class="phrase-en">Are you okay?</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Odaijini')"><div class="phrase-left"><span class="phrase-jp">Odaijini</span></div><span class="phrase-en">Get well soon</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Ki o tsukete kudasai')"><div class="phrase-left"><span class="phrase-jp">Ki o tsukete kudasai</span></div><span class="phrase-en">Take care</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Workplace</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Osaki ni shitsureishimasu')"><div class="phrase-left"><span class="phrase-jp">Osaki ni shitsureishimasu</span></div><span class="phrase-en">Leaving first (polite)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Otsukaresama deshita')"><div class="phrase-left"><span class="phrase-jp">Otsukaresama deshita</span></div><span class="phrase-en">Thank you for your hard work</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEK 2: Hiragana -->
+      <div class="chapter-card">
+        <div class="chapter-header" onclick="toggleChapter(this)">
+          <div class="chapter-header-left">
+            <svg class="chapter-header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            <div><div class="week-label">Week 2</div><h3>Hiragana Basics</h3></div>
+          </div>
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="chapter-body">
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Vowels (very important!)</div>
+            <div class="hiragana-grid">
+              <div class="hira-cell" onclick="speakText('a')"><span class="hira-char">あ</span><span class="hira-roman">a</span></div>
+              <div class="hira-cell" onclick="speakText('i')"><span class="hira-char">い</span><span class="hira-roman">i</span></div>
+              <div class="hira-cell" onclick="speakText('u')"><span class="hira-char">う</span><span class="hira-roman">u</span></div>
+              <div class="hira-cell" onclick="speakText('e')"><span class="hira-char">え</span><span class="hira-roman">e</span></div>
+              <div class="hira-cell" onclick="speakText('o')"><span class="hira-char">お</span><span class="hira-roman">o</span></div>
+            </div>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Everything in Japanese is based on these <span class="keyword">5 vowel sounds</span></span></div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>K Group (か行)</div>
+            <div class="hiragana-grid">
+              <div class="hira-cell" onclick="speakText('ka')"><span class="hira-char">か</span><span class="hira-roman">ka</span></div>
+              <div class="hira-cell" onclick="speakText('ki')"><span class="hira-char">き</span><span class="hira-roman">ki</span></div>
+              <div class="hira-cell" onclick="speakText('ku')"><span class="hira-char">く</span><span class="hira-roman">ku</span></div>
+              <div class="hira-cell" onclick="speakText('ke')"><span class="hira-char">け</span><span class="hira-roman">ke</span></div>
+              <div class="hira-cell" onclick="speakText('ko')"><span class="hira-char">こ</span><span class="hira-roman">ko</span></div>
+            </div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>S Group (さ行)</div>
+            <div class="hiragana-grid">
+              <div class="hira-cell" onclick="speakText('sa')"><span class="hira-char">さ</span><span class="hira-roman">sa</span></div>
+              <div class="hira-cell" onclick="speakText('shi')"><span class="hira-char">し</span><span class="hira-roman">shi</span></div>
+              <div class="hira-cell" onclick="speakText('su')"><span class="hira-char">す</span><span class="hira-roman">su</span></div>
+              <div class="hira-cell" onclick="speakText('se')"><span class="hira-char">せ</span><span class="hira-roman">se</span></div>
+              <div class="hira-cell" onclick="speakText('so')"><span class="hira-char">そ</span><span class="hira-roman">so</span></div>
+            </div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>T Group (た行)</div>
+            <div class="hiragana-grid">
+              <div class="hira-cell" onclick="speakText('ta')"><span class="hira-char">た</span><span class="hira-roman">ta</span></div>
+              <div class="hira-cell" onclick="speakText('chi')"><span class="hira-char">ち</span><span class="hira-roman">chi</span></div>
+              <div class="hira-cell" onclick="speakText('tsu')"><span class="hira-char">つ</span><span class="hira-roman">tsu</span></div>
+              <div class="hira-cell" onclick="speakText('te')"><span class="hira-char">て</span><span class="hira-roman">te</span></div>
+              <div class="hira-cell" onclick="speakText('to')"><span class="hira-char">と</span><span class="hira-roman">to</span></div>
+            </div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>N, H, M Groups</div>
+            <div class="hiragana-grid">
+              <div class="hira-cell" onclick="speakText('na')"><span class="hira-char">な</span><span class="hira-roman">na</span></div>
+              <div class="hira-cell" onclick="speakText('ni')"><span class="hira-char">に</span><span class="hira-roman">ni</span></div>
+              <div class="hira-cell" onclick="speakText('nu')"><span class="hira-char">ぬ</span><span class="hira-roman">nu</span></div>
+              <div class="hira-cell" onclick="speakText('ne')"><span class="hira-char">ね</span><span class="hira-roman">ne</span></div>
+              <div class="hira-cell" onclick="speakText('no')"><span class="hira-char">の</span><span class="hira-roman">no</span></div>
+              <div class="hira-cell" onclick="speakText('ha')"><span class="hira-char">は</span><span class="hira-roman">ha</span></div>
+              <div class="hira-cell" onclick="speakText('hi')"><span class="hira-char">ひ</span><span class="hira-roman">hi</span></div>
+              <div class="hira-cell" onclick="speakText('fu')"><span class="hira-char">ふ</span><span class="hira-roman">fu</span></div>
+              <div class="hira-cell" onclick="speakText('he')"><span class="hira-char">へ</span><span class="hira-roman">he</span></div>
+              <div class="hira-cell" onclick="speakText('ho')"><span class="hira-char">ほ</span><span class="hira-roman">ho</span></div>
+              <div class="hira-cell" onclick="speakText('ma')"><span class="hira-char">ま</span><span class="hira-roman">ma</span></div>
+              <div class="hira-cell" onclick="speakText('mi')"><span class="hira-char">み</span><span class="hira-roman">mi</span></div>
+              <div class="hira-cell" onclick="speakText('mu')"><span class="hira-char">む</span><span class="hira-roman">mu</span></div>
+              <div class="hira-cell" onclick="speakText('me')"><span class="hira-char">め</span><span class="hira-roman">me</span></div>
+              <div class="hira-cell" onclick="speakText('mo')"><span class="hira-char">も</span><span class="hira-roman">mo</span></div>
+            </div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Special Sounds</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('ka, ga')"><div class="phrase-left"><span class="phrase-jp">か → が (Dakuten ﾞ)</span></div><span class="phrase-en">ka → ga (voiced)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('sa, za')"><div class="phrase-left"><span class="phrase-jp">さ → ざ</span></div><span class="phrase-en">sa → za</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('ha, pa')"><div class="phrase-left"><span class="phrase-jp">は → ぱ (Handakuten ﾟ)</span></div><span class="phrase-en">ha → pa</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('kite, kitte')"><div class="phrase-left"><span class="phrase-jp">きて vs きって (っ)</span></div><span class="phrase-en">kite vs kitte (double pause)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('obasan, obaasan')"><div class="phrase-left"><span class="phrase-jp">おばさん vs おばあさん</span></div><span class="phrase-en">aunt vs grandmother (long vowel!)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span><strong>Critical:</strong> Small <span class="keyword">っ</span> = pause · Long vowel = <span class="keyword">completely different word</span>!</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEK 2: Family & Body Parts — WITH ROMANIZATION -->
+      <div class="chapter-card">
+        <div class="chapter-header" onclick="toggleChapter(this)">
+          <div class="chapter-header-left">
+            <svg class="chapter-header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <div><div class="week-label">Week 2</div><h3>Family &amp; Body Parts</h3></div>
+          </div>
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="chapter-body">
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Family Members (Kazoku / かぞく)</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('chichi, otousan')"><div class="phrase-left"><span class="phrase-jp">ちち / おとうさん</span><span class="phrase-roman">chichi / otōsan</span></div><span class="phrase-en">Father (my/other's)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('haha, okaasan')"><div class="phrase-left"><span class="phrase-jp">はは / おかあさん</span><span class="phrase-roman">haha / okāsan</span></div><span class="phrase-en">Mother (my/other's)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('sofu, ojiisan')"><div class="phrase-left"><span class="phrase-jp">そふ / おじいさん</span><span class="phrase-roman">sofu / ojīsan</span></div><span class="phrase-en">Grandfather</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('sobo, obaasan')"><div class="phrase-left"><span class="phrase-jp">そぼ / おばあさん</span><span class="phrase-roman">sobo / obāsan</span></div><span class="phrase-en">Grandmother</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('ani, oniisan')"><div class="phrase-left"><span class="phrase-jp">あに / おにいさん</span><span class="phrase-roman">ani / oniisan</span></div><span class="phrase-en">Older brother</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('ane, oneesan')"><div class="phrase-left"><span class="phrase-jp">あね / おねえさん</span><span class="phrase-roman">ane / onēsan</span></div><span class="phrase-en">Older sister</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('otouto')"><div class="phrase-left"><span class="phrase-jp">おとうと</span><span class="phrase-roman">otōto</span></div><span class="phrase-en">Younger brother</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('imouto')"><div class="phrase-left"><span class="phrase-jp">いもうと</span><span class="phrase-roman">imōto</span></div><span class="phrase-en">Younger sister</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('ryoushin, goryoushin')"><div class="phrase-left"><span class="phrase-jp">りょうしん / ごりょうしん</span><span class="phrase-roman">ryōshin / goryōshin</span></div><span class="phrase-en">Parents (my/other's)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><strong>Rule:</strong> Your family = <span class="keyword">simple words</span> · Other people's family = <span class="keyword">polite (お/ご)</span></span></div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Body Parts (Karada / からだ)</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('kao')"><div class="phrase-left"><span class="phrase-jp">かお</span><span class="phrase-roman">kao</span></div><span class="phrase-en">Face</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('atama')"><div class="phrase-left"><span class="phrase-jp">あたま</span><span class="phrase-roman">atama</span></div><span class="phrase-en">Head</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('me')"><div class="phrase-left"><span class="phrase-jp">め</span><span class="phrase-roman">me</span></div><span class="phrase-en">Eye</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('hana')"><div class="phrase-left"><span class="phrase-jp">はな</span><span class="phrase-roman">hana</span></div><span class="phrase-en">Nose</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('kuchi')"><div class="phrase-left"><span class="phrase-jp">くち</span><span class="phrase-roman">kuchi</span></div><span class="phrase-en">Mouth</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('mimi')"><div class="phrase-left"><span class="phrase-jp">みみ</span><span class="phrase-roman">mimi</span></div><span class="phrase-en">Ear</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('kata')"><div class="phrase-left"><span class="phrase-jp">かた</span><span class="phrase-roman">kata</span></div><span class="phrase-en">Shoulder</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('ude')"><div class="phrase-left"><span class="phrase-jp">うで</span><span class="phrase-roman">ude</span></div><span class="phrase-en">Arm</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('te, yubi')"><div class="phrase-left"><span class="phrase-jp">て / ゆび</span><span class="phrase-roman">te / yubi</span></div><span class="phrase-en">Hand / Finger</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('onaka')"><div class="phrase-left"><span class="phrase-jp">おなか</span><span class="phrase-roman">onaka</span></div><span class="phrase-en">Stomach</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('hiza, ashi')"><div class="phrase-left"><span class="phrase-jp">ひざ / あし</span><span class="phrase-roman">hiza / ashi</span></div><span class="phrase-en">Knee / Leg-Foot</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>Finger Names (Yubi / ゆび)</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('oyayubi')"><div class="phrase-left"><span class="phrase-jp">おやゆび</span><span class="phrase-roman">oyayubi</span></div><span class="phrase-en">Thumb</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('hitosashiyubi')"><div class="phrase-left"><span class="phrase-jp">ひとさしゆび</span><span class="phrase-roman">hitosashiyubi</span></div><span class="phrase-en">Index finger</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('nakayubi')"><div class="phrase-left"><span class="phrase-jp">なかゆび</span><span class="phrase-roman">nakayubi</span></div><span class="phrase-en">Middle finger</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('kusuriyubi')"><div class="phrase-left"><span class="phrase-jp">くすりゆび</span><span class="phrase-roman">kusuriyubi</span></div><span class="phrase-en">Ring finger</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('koyubi')"><div class="phrase-left"><span class="phrase-jp">こゆび</span><span class="phrase-roman">koyubi</span></div><span class="phrase-en">Little finger</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPTER 3: Grammar -->
+      <div class="chapter-card">
+        <div class="chapter-header" onclick="toggleChapter(this)">
+          <div class="chapter-header-left">
+            <svg class="chapter-header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <div><div class="week-label">Chapter 3</div><h3>Basic Grammar</h3></div>
+          </div>
+          <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="chapter-body">
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>1. Basic Sentence Pattern</div>
+            <div class="memory-tip" style="margin-bottom:0.75rem;"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg><span><strong>Formula:</strong> <span class="keyword">N1 wa N2 desu</span> = "N1 is N2"<br><em>Example: Watashi wa gakusei desu → I am a student.</em></span></div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Watashi wa gakusei desu')"><div class="phrase-left"><span class="phrase-jp">Watashi wa gakusei desu</span></div><span class="phrase-en">I am a student</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/></svg>2. Negative Sentence</div>
+            <div class="memory-tip" style="margin-bottom:0.75rem;"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/></svg><span><strong>Formula:</strong> <span class="keyword">N1 wa N2 dewa arimasen</span><br>Casual: ja arimasen</span></div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Tanaka-san wa gakusei dewa arimasen')"><div class="phrase-left"><span class="phrase-jp">Tanaka-san wa gakusei dewa arimasen</span></div><span class="phrase-en">Mr. Tanaka is not a student</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/></svg>3. Particles</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('wa')"><div class="phrase-left"><span class="phrase-jp">は (wa)</span></div><span class="phrase-en">Topic marker ("as for")</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('no')"><div class="phrase-left"><span class="phrase-jp">の (no)</span></div><span class="phrase-en">Belonging: N1 no N2 = N2 of N1</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('mo')"><div class="phrase-left"><span class="phrase-jp">も (mo)</span></div><span class="phrase-en">Also / Too</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('ka')"><div class="phrase-left"><span class="phrase-jp">か (ka)</span></div><span class="phrase-en">Question marker (add at end)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>4. Answering Questions</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('Hai, sou desu')"><div class="phrase-left"><span class="phrase-jp">Hai / Sou desu</span></div><span class="phrase-en">Yes / Yes, that's right</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Iie, sou dewa arimasen')"><div class="phrase-left"><span class="phrase-jp">Iie / Sou dewa arimasen</span></div><span class="phrase-en">No / No, that's not right</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/></svg>5. Age Counting (~sai)</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('issai, hassai')"><div class="phrase-left"><span class="phrase-jp">1 → issai · 8 → hassai</span></div><span class="phrase-en">1 yr · 8 yrs old</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('jussai, hatachi')"><div class="phrase-left"><span class="phrase-jp">10 → jussai · 20 → hatachi</span></div><span class="phrase-en">10 yrs · 20 yrs old</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('Watashi wa juu hassai desu')"><div class="phrase-left"><span class="phrase-jp">Watashi wa juu hassai desu</span></div><span class="phrase-en">I am 18 years old</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>6. Counting People (~nin)</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('hitori, futari')"><div class="phrase-left"><span class="phrase-jp">hitori / futari</span></div><span class="phrase-en">1 person / 2 people (irregular!)</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('san nin, yo nin')"><div class="phrase-left"><span class="phrase-jp">san-nin / yo-nin</span></div><span class="phrase-en">3 / 4 people</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('nana nin, jyuu nin')"><div class="phrase-left"><span class="phrase-jp">nana-nin / jyuu-nin</span></div><span class="phrase-en">7 / 10 people</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+          </div>
+          <div class="subsection">
+            <div class="subsection-title"><svg class="subsection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>7. Numbers</div>
+            <ul class="phrase-list">
+              <li class="phrase-item" onclick="speakText('jyuu, hyaku')"><div class="phrase-left"><span class="phrase-jp">jyuu = 10 · hyaku = 100</span></div><span class="phrase-en">Ten · Hundred</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+              <li class="phrase-item" onclick="speakText('sen, man')"><div class="phrase-left"><span class="phrase-jp">sen = 1,000 · man = 10,000</span></div><span class="phrase-en">Thousand · Ten-thousand</span><svg class="speak-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></li>
+            </ul>
+            <div class="memory-tip"><svg class="tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><span><strong>~san:</strong> Respectful title for others. <span class="keyword">Never use for yourself!</span></span></div>
+          </div>
+          <div class="exam-focus-banner" style="margin-top:1rem;">
+            <svg class="banner-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            <div>
+              <strong>Exam Focus Checklist</strong>
+              <span>Patterns · Particles (wa, no, mo, ka) · Numbers 1–100,000 · Age counting · People counting</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARDS PAGE -->
+<div class="page" id="page-flashcards">
+  <div class="section">
+    <div class="section-title">Flashcard Drill</div>
+    <p class="section-sub">Click a card to flip it · Press the 🔊 button to hear pronunciation</p>
+
+    <div class="flashcard-controls">
+      <button class="filter-btn active" onclick="filterCards('all', this)">All</button>
+      <button class="filter-btn" onclick="filterCards('classroom', this)">Classroom</button>
+      <button class="filter-btn" onclick="filterCards('greetings', this)">Greetings</button>
+      <button class="filter-btn" onclick="filterCards('hiragana', this)">Hiragana</button>
+      <button class="filter-btn" onclick="filterCards('family', this)">Family/Body</button>
+      <button class="filter-btn" onclick="filterCards('grammar', this)">Grammar</button>
+    </div>
+
+    <div class="flashcard-arena">
+      <div class="fc-stats">
+        <div class="fc-stat"><div class="dot dot-know"></div><span id="fc-known-count">0 known</span></div>
+        <div class="fc-stat"><div class="dot dot-later"></div><span id="fc-later-count">0 to review</span></div>
+      </div>
+      <div style="text-align:center; color: var(--gray); font-size:0.85rem;"><span id="fc-counter">Card 1 of 30</span></div>
+      <div class="flashcard-progress-bar"><div class="flashcard-progress-fill" id="fc-progress" style="width:3%"></div></div>
+
+      <div class="flashcard-wrap" onclick="flipCard()">
+        <div class="flashcard" id="flashcard">
+          <div class="card-face card-front">
+            <div class="card-tag" id="fc-tag">Classroom</div>
+            <div class="card-jp" id="fc-jp">Hajimemashou</div>
+            <button class="card-speak-btn" onclick="event.stopPropagation(); speakCurrentCard()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              Pronounce
+            </button>
+            <div class="card-hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Tap card to reveal meaning
+            </div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-meaning" id="fc-meaning">Let's start</div>
+            <div class="card-tip" id="fc-tip">Ends with -mashou = "let's do something"</div>
+            <button class="card-speak-btn back-speak" onclick="event.stopPropagation(); speakCurrentCard()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              Pronounce Again
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flashcard-actions">
+        <button class="fc-btn know" onclick="markCard('know')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Know it
+        </button>
+        <button class="fc-btn later" onclick="markCard('later')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+          Review later
+        </button>
+        <button class="fc-btn next" onclick="nextCard()">
+          Next
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ PAGE -->
+<div class="page" id="page-quiz">
+  <div class="section">
+    <div id="quiz-setup-screen">
+      <div class="section-title">Quiz Mode</div>
+      <p class="section-sub">Test your knowledge with auto-marked questions</p>
+      <div class="quiz-setup">
+        <div style="margin-bottom:1.5rem;">
+          <div class="subsection-title" style="border:none; padding:0; margin-bottom:0.75rem;">Chapter</div>
+          <div class="quiz-option-grid">
+            <div class="quiz-opt-btn selected" data-type="chapter" data-val="all" onclick="selectOpt(this,'chapter')"><strong>All</strong><span>Mixed</span></div>
+            <div class="quiz-opt-btn" data-type="chapter" data-val="classroom" onclick="selectOpt(this,'chapter')"><strong>Classroom</strong><span>Week 1</span></div>
+            <div class="quiz-opt-btn" data-type="chapter" data-val="greetings" onclick="selectOpt(this,'chapter')"><strong>Greetings</strong><span>Week 1</span></div>
+            <div class="quiz-opt-btn" data-type="chapter" data-val="vocab" onclick="selectOpt(this,'chapter')"><strong>Vocab</strong><span>Week 2</span></div>
+            <div class="quiz-opt-btn" data-type="chapter" data-val="grammar" onclick="selectOpt(this,'chapter')"><strong>Grammar</strong><span>Ch. 3</span></div>
+          </div>
+        </div>
+        <div style="margin-bottom:1.5rem;">
+          <div class="subsection-title" style="border:none; padding:0; margin-bottom:0.75rem;">Difficulty</div>
+          <div class="quiz-option-grid">
+            <div class="quiz-opt-btn selected" data-type="diff" data-val="easy" onclick="selectOpt(this,'diff')"><strong>Easy</strong><span>Basic recall</span></div>
+            <div class="quiz-opt-btn" data-type="diff" data-val="medium" onclick="selectOpt(this,'diff')"><strong>Medium</strong><span>Mixed</span></div>
+            <div class="quiz-opt-btn" data-type="diff" data-val="hard" onclick="selectOpt(this,'diff')"><strong>Hard</strong><span>All included</span></div>
+          </div>
+        </div>
+        <div style="margin-bottom:2rem;">
+          <div class="subsection-title" style="border:none; padding:0; margin-bottom:0.75rem;">Timer</div>
+          <div class="quiz-option-grid">
+            <div class="quiz-opt-btn selected" data-type="timer" data-val="none" onclick="selectOpt(this,'timer')"><strong>No Timer</strong><span>Relaxed</span></div>
+            <div class="quiz-opt-btn" data-type="timer" data-val="30" onclick="selectOpt(this,'timer')"><strong>30s</strong><span>Per question</span></div>
+            <div class="quiz-opt-btn" data-type="timer" data-val="15" onclick="selectOpt(this,'timer')"><strong>15s</strong><span>Challenge!</span></div>
+          </div>
+        </div>
+        <button class="btn-primary" style="width:100%; justify-content:center; padding:1rem;" onclick="startQuiz()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Start Quiz
+        </button>
+      </div>
+    </div>
+
+    <div id="quiz-active-screen" class="hidden">
+      <div class="quiz-arena">
+        <div class="quiz-header">
+          <span class="quiz-progress-text" id="quiz-progress-text">Question 1 of 10</span>
+          <div class="timer-badge" id="timer-badge" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="timer-display">30</span>s
+          </div>
+        </div>
+        <div class="quiz-bar"><div class="quiz-bar-fill" id="quiz-bar-fill" style="width:0%"></div></div>
+        <div class="question-card">
+          <div class="question-type" id="q-type">Meaning</div>
+          <div class="question-text" id="q-text">What does "Hajimemashou" mean?</div>
+        </div>
+        <div class="options-grid" id="options-grid"></div>
+        <div class="feedback-box" id="feedback-box"></div>
+        <div class="quiz-nav">
+          <button class="btn-primary" id="next-btn" onclick="nextQuestion()" style="display:none">
+            Next Question
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="quiz-results-screen" class="hidden">
+      <div class="results-card">
+        <div class="score-circle" id="score-circle" style="--pct: 0deg">
+          <div class="score-inner" id="score-inner">0%</div>
+        </div>
+        <div class="results-title" id="results-title">Quiz Complete!</div>
+        <div class="results-sub" id="results-sub">Here's how you did</div>
+        <div class="performance-badge" id="perf-badge"></div>
+        <div class="results-breakdown">
+          <div class="rb-item rb-correct"><strong id="res-correct">0</strong><span>Correct</span></div>
+          <div class="rb-item rb-wrong"><strong id="res-wrong">0</strong><span>Wrong</span></div>
+          <div class="rb-item"><strong id="res-total">0</strong><span>Total</span></div>
+        </div>
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="retryQuiz()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+            Retry Quiz
+          </button>
+          <button class="btn-secondary" onclick="showQuizSetup()">New Quiz</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+  <div class="section">
+    <div class="section-title">Learning Dashboard</div>
+    <p class="section-sub">Your progress at a glance</p>
+    <div class="dashboard-grid">
+      <div class="dash-card">
+        <div class="dash-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Daily Streak</div>
+        <div class="streak-display">
+          <svg class="streak-icon" width="40" height="40" viewBox="0 0 24 24" fill="var(--red)" stroke="var(--red-dark)" stroke-width="0.5"><path d="M12 2c0 0-5 5-5 10a5 5 0 0 0 10 0C17 7 12 2 12 2zm0 13a3 3 0 0 1-3-3c0-2 2-5 3-7 1 2 3 5 3 7a3 3 0 0 1-3 3z"/></svg>
+          <div class="streak-info"><strong id="streak-display">0 days</strong><span>Keep it up!</span></div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Flashcard Mastery</div>
+        <h3 id="fc-mastery-pct">0%</h3>
+        <div class="progress-bar"><div class="progress-fill green" id="fc-mastery-bar" style="width:0%"></div></div>
+        <div style="font-size:0.82rem; color:var(--gray)"><span id="fc-known-total">0</span> known · <span id="fc-total-total">0</span> total</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>Best Quiz Score</div>
+        <h3 id="best-score-display">—</h3>
+        <div style="font-size:0.82rem; color:var(--gray); margin-top:0.25rem;">across all quizzes</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Chapter Progress</div>
+        <div class="chapter-progress-list" id="chapter-progress-list">
+          <div class="cp-item"><label>Classroom</label><div class="cp-bar"><div class="cp-fill" id="cp-classroom" style="width:0%"></div></div><span class="cp-pct" id="cp-classroom-pct">0%</span></div>
+          <div class="cp-item"><label>Greetings</label><div class="cp-bar"><div class="cp-fill" id="cp-greetings" style="width:0%"></div></div><span class="cp-pct" id="cp-greetings-pct">0%</span></div>
+          <div class="cp-item"><label>Hiragana</label><div class="cp-bar"><div class="cp-fill" id="cp-hiragana" style="width:0%"></div></div><span class="cp-pct" id="cp-hiragana-pct">0%</span></div>
+          <div class="cp-item"><label>Grammar</label><div class="cp-bar"><div class="cp-fill" id="cp-grammar" style="width:0%"></div></div><span class="cp-pct" id="cp-grammar-pct">0%</span></div>
+        </div>
+      </div>
+      <div class="dash-card" style="grid-column: span 2;">
+        <div class="dash-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Quiz History</div>
+        <ul class="score-history" id="score-history">
+          <li class="sh-item" style="color:var(--gray); font-style:italic;">No quiz results yet. Take a quiz to see your scores!</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn-secondary" onclick="resetProgress()" style="font-size:0.85rem; padding:0.6rem 1.25rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:0.4rem"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+        Reset All Progress
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a onclick="navigate('home')" href="#">Home</a>
+    <a onclick="navigate('notes')" href="#">Notes</a>
+    <a onclick="navigate('flashcards')" href="#">Flashcards</a>
+    <a onclick="navigate('quiz')" href="#">Quiz</a>
+    <a onclick="navigate('dashboard')" href="#">Dashboard</a>
+    <a href="https://github.com/Paim41" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      GitHub (Paim41)
+    </a>
+  </div>
+  <p>© 2025 Japanese Learning Hub · Built for language learners · Click any phrase to hear it!</p>
+</footer>
+
+<script>
+// ============================
+// SAKURA CANVAS
+// ============================
+const canvas = document.getElementById('sakura-canvas');
+const ctx = canvas.getContext('2d');
+let petals = [];
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+function createPetal() {
+  return { x: Math.random() * canvas.width, y: -20, size: Math.random() * 8 + 4, speedX: Math.random() * 2 - 1, speedY: Math.random() * 1.5 + 0.5, rotation: Math.random() * 360, rotSpeed: Math.random() * 2 - 1, opacity: Math.random() * 0.6 + 0.2, sway: Math.random() * 2, swayOffset: Math.random() * Math.PI * 2 };
+}
+for (let i = 0; i < 25; i++) { const p = createPetal(); p.y = Math.random() * canvas.height; petals.push(p); }
+function drawPetal(p) {
+  ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rotation * Math.PI / 180); ctx.globalAlpha = p.opacity;
+  ctx.fillStyle = '#e8b4c0'; ctx.beginPath(); ctx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+let frame = 0;
+function animateSakura() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); frame++;
+  petals.forEach(p => {
+    p.y += p.speedY; p.x += p.speedX + Math.sin(frame * 0.02 + p.swayOffset) * p.sway * 0.1; p.rotation += p.rotSpeed;
+    if (p.y > canvas.height + 20) { Object.assign(p, createPetal()); p.y = -20; }
+    drawPetal(p);
+  });
+  requestAnimationFrame(animateSakura);
+}
+animateSakura();
+
+// ============================
+// TEXT-TO-SPEECH ENGINE
+// ============================
+let currentSpeakEl = null;
+let speakIndicatorTimeout = null;
+
+function speakText(text) {
+  if (!window.speechSynthesis) {
+    showToast('❌ Speech not supported in this browser');
+    return;
+  }
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+
+  // Clean text — remove romanization macrons for TTS
+  const cleanText = text.replace(/[āīūēōĀĪŪĒŌ]/g, c => {
+    const map = { 'ā':'a','ī':'i','ū':'u','ē':'e','ō':'o','Ā':'A','Ī':'I','Ū':'U','Ē':'E','Ō':'O' };
+    return map[c] || c;
+  });
+
+  const utter = new SpeechSynthesisUtterance(cleanText);
+
+  // Try to find a Japanese voice first, fall back to any available
+  const voices = window.speechSynthesis.getVoices();
+  const jpVoice = voices.find(v => v.lang.startsWith('ja'));
+  if (jpVoice) {
+    utter.voice = jpVoice;
+    utter.lang = 'ja-JP';
+  } else {
+    // Use English voice for romaji — still helpful for pronunciation guidance
+    utter.lang = 'en-US';
+    utter.rate = 0.8;
+  }
+  utter.rate = jpVoice ? 0.85 : 0.8;
+  utter.pitch = 1.0;
+
+  showSpeakIndicator(cleanText);
+
+  utter.onend = () => { hideSpeakIndicator(); };
+  utter.onerror = () => { hideSpeakIndicator(); };
+
+  window.speechSynthesis.speak(utter);
+}
+
+function showSpeakIndicator(text) {
+  const el = document.getElementById('speak-indicator');
+  const textEl = document.getElementById('speak-indicator-text');
+  const preview = text.length > 25 ? text.slice(0, 25) + '…' : text;
+  textEl.textContent = '🔊 ' + preview;
+  el.classList.add('show');
+  clearTimeout(speakIndicatorTimeout);
+  speakIndicatorTimeout = setTimeout(hideSpeakIndicator, 4000);
+}
+
+function hideSpeakIndicator() {
+  document.getElementById('speak-indicator').classList.remove('show');
+}
+
+// Load voices (needed for Chrome)
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+}
+
+// ============================
+// NAVIGATION
+// ============================
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const nb = document.getElementById('nav-' + page);
+  if (nb) nb.classList.add('active');
+  document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
+  const mb = document.getElementById('mob-' + page);
+  if (mb) mb.classList.add('active');
+  window.scrollTo(0, 0);
+  if (page === 'dashboard') updateDashboard();
+  if (page === 'flashcards') initFlashcards();
+}
+
+// ============================
+// DARK MODE
+// ============================
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  const icon = document.getElementById('dark-icon');
+  if (document.body.classList.contains('dark')) {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  } else {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+  localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+}
+if (localStorage.getItem('darkMode') === 'true') toggleDark();
+
+// ============================
+// CHAPTER TOGGLE
+// ============================
+function toggleChapter(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ============================
+// TOAST
+// ============================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================
+// SEARCH
+// ============================
+const allPhrases = [
+  {jp:'Hajimemashou',roman:'Hajimemashou',en:"Let's start",cat:'Classroom'},
+  {jp:'Owarimashou',roman:'Owarimashou',en:"Let's finish",cat:'Classroom'},
+  {jp:'Tatte kudasai',roman:'Tatte kudasai',en:'Stand up',cat:'Classroom'},
+  {jp:'Suwatte kudasai',roman:'Suwatte kudasai',en:'Sit down',cat:'Classroom'},
+  {jp:'Shizuka ni shite kudasai',roman:'Shizuka ni shite kudasai',en:'Be quiet',cat:'Classroom'},
+  {jp:'Mou ichido onegaishimasu',roman:'Mou ichido onegaishimasu',en:'Repeat again',cat:'Classroom'},
+  {jp:'Yukkuri itte kudasai',roman:'Yukkuri itte kudasai',en:'Speak slowly',cat:'Classroom'},
+  {jp:'Wakarimashita ka?',roman:'Wakarimashita ka',en:'Do you understand?',cat:'Classroom'},
+  {jp:'Ohayou gozaimasu',roman:'Ohayou gozaimasu',en:'Good morning',cat:'Greetings'},
+  {jp:'Konnichiwa',roman:'Konnichiwa',en:'Good afternoon',cat:'Greetings'},
+  {jp:'Konbanwa',roman:'Konbanwa',en:'Good evening',cat:'Greetings'},
+  {jp:'Oyasuminasai',roman:'Oyasuminasai',en:'Good night',cat:'Greetings'},
+  {jp:'Hajimemashite',roman:'Hajimemashite',en:'Nice to meet you',cat:'Greetings'},
+  {jp:'Arigatou gozaimasu',roman:'Arigatou gozaimasu',en:'Thank you',cat:'Greetings'},
+  {jp:'Ittekimasu',roman:'Ittekimasu',en:"I'm leaving",cat:'Greetings'},
+  {jp:'Tadaima',roman:'Tadaima',en:"I'm back",cat:'Greetings'},
+  {jp:'Itadakimasu',roman:'Itadakimasu',en:'Before eating',cat:'Greetings'},
+  {jp:'Otsukaresama deshita',roman:'Otsukaresama deshita',en:'Thanks for hard work',cat:'Workplace'},
+  {jp:'ちち / おとうさん',roman:'chichi / otōsan',en:'Father',cat:'Family'},
+  {jp:'はは / おかあさん',roman:'haha / okāsan',en:'Mother',cat:'Family'},
+  {jp:'そふ / おじいさん',roman:'sofu / ojīsan',en:'Grandfather',cat:'Family'},
+  {jp:'そぼ / おばあさん',roman:'sobo / obāsan',en:'Grandmother',cat:'Family'},
+  {jp:'あに / おにいさん',roman:'ani / oniisan',en:'Older brother',cat:'Family'},
+  {jp:'おとうと',roman:'otōto',en:'Younger brother',cat:'Family'},
+  {jp:'いもうと',roman:'imōto',en:'Younger sister',cat:'Family'},
+  {jp:'かお',roman:'kao',en:'Face',cat:'Body'},
+  {jp:'あたま',roman:'atama',en:'Head',cat:'Body'},
+  {jp:'め',roman:'me',en:'Eye',cat:'Body'},
+  {jp:'はな',roman:'hana',en:'Nose',cat:'Body'},
+  {jp:'くち',roman:'kuchi',en:'Mouth',cat:'Body'},
+  {jp:'みみ',roman:'mimi',en:'Ear',cat:'Body'},
+  {jp:'おやゆび',roman:'oyayubi',en:'Thumb',cat:'Body'},
+  {jp:'ひとさしゆび',roman:'hitosashiyubi',en:'Index finger',cat:'Body'},
+  {jp:'なかゆび',roman:'nakayubi',en:'Middle finger',cat:'Body'},
+  {jp:'くすりゆび',roman:'kusuriyubi',en:'Ring finger',cat:'Body'},
+  {jp:'こゆび',roman:'koyubi',en:'Little finger',cat:'Body'},
+  {jp:'て / ゆび',roman:'te / yubi',en:'Hand / Finger',cat:'Body'},
+  {jp:'N1 wa N2 desu',roman:'N1 wa N2 desu',en:'N1 is N2',cat:'Grammar'},
+  {jp:'N1 wa N2 dewa arimasen',roman:'N1 wa N2 dewa arimasen',en:'N1 is not N2',cat:'Grammar'},
+  {jp:'hitori / futari',roman:'hitori / futari',en:'1 person / 2 people',cat:'Grammar'},
+  {jp:'hatachi',roman:'hatachi',en:'20 years old',cat:'Grammar'},
+];
+
+function searchContent(val) {
+  const res = document.getElementById('search-results');
+  const main = document.getElementById('notes-main');
+  if (!val.trim()) { res.innerHTML = ''; main.style.display = ''; return; }
+  const q = val.toLowerCase();
+  const matches = allPhrases.filter(p => p.jp.toLowerCase().includes(q) || p.en.toLowerCase().includes(q) || (p.roman && p.roman.toLowerCase().includes(q)));
+  main.style.display = matches.length ? 'none' : '';
+  if (!matches.length) { res.innerHTML = '<p style="color:var(--gray);text-align:center;padding:2rem">No results found</p>'; return; }
+  res.innerHTML = matches.map(p => `
+    <div class="search-result-item" onclick="speakText('${p.roman || p.jp}')">
+      <div>
+        <div class="sr-jp">${p.jp}</div>
+        ${p.roman ? `<div class="sr-roman">${p.roman}</div>` : ''}
+        <div class="sr-en">${p.en}</div>
+      </div>
+      <span class="sr-tag">${p.cat}</span>
+    </div>
+  `).join('');
+}
+
+// ============================
+// FLASHCARD DATA
+// ============================
+const flashcardData = [
+  {jp:'Hajimemashou',en:"Let's start",tip:"Ends with -mashou = let's do",cat:'classroom'},
+  {jp:'Owarimashou',en:"Let's finish",tip:'-mashou = let\'s do something',cat:'classroom'},
+  {jp:'Tatte kudasai',en:'Stand up',tip:'kudasai = please',cat:'classroom'},
+  {jp:'Suwatte kudasai',en:'Sit down',tip:'kudasai = please',cat:'classroom'},
+  {jp:'Shizuka ni shite kudasai',en:'Be quiet',tip:'kudasai = please',cat:'classroom'},
+  {jp:'Yukkuri itte kudasai',en:'Speak slowly',tip:'Yukkuri = slowly',cat:'classroom'},
+  {jp:'Mou ichido onegaishimasu',en:'Once more please',tip:'Ichido = once, mou = again',cat:'classroom'},
+  {jp:'Wakarimashita ka',en:'Do you understand?',tip:'Add ka = question!',cat:'classroom'},
+  {jp:'Ohayou gozaimasu',en:'Good morning',tip:'Ohayou → morning',cat:'greetings'},
+  {jp:'Konnichiwa',en:'Good afternoon',tip:'Most famous Japanese greeting!',cat:'greetings'},
+  {jp:'Konbanwa',en:'Good evening',tip:'Ban = evening',cat:'greetings'},
+  {jp:'Oyasuminasai',en:'Good night',tip:'Oyasumi → rest',cat:'greetings'},
+  {jp:'Arigatou gozaimasu',en:'Thank you (formal)',tip:'gozaimasu = polite',cat:'greetings'},
+  {jp:'Hajimemashite',en:'Nice to meet you',tip:'Used on first meeting',cat:'greetings'},
+  {jp:'Ittekimasu',en:"I'm leaving",tip:'Pair with Itterasshai',cat:'greetings'},
+  {jp:'Tadaima',en:"I'm back",tip:'Pair with Okaerinasai',cat:'greetings'},
+  {jp:'Itadakimasu',en:'Before eating',tip:'Show respect for food',cat:'greetings'},
+  {jp:'Otsukaresama deshita',en:'Thanks for hard work',tip:'Very common in workplaces',cat:'greetings'},
+  {jp:'a i u e o',en:'A I U E O (vowels)',tip:'Foundation of all Japanese sounds!',cat:'hiragana'},
+  {jp:'ka ki ku ke ko',en:'KA KI KU KE KO',tip:'K group hiragana',cat:'hiragana'},
+  {jp:'sa shi su se so',en:'SA SHI SU SE SO',tip:'Note: si → shi (irregular!)',cat:'hiragana'},
+  {jp:'ta chi tsu te to',en:'TA CHI TSU TE TO',tip:'Note: ti→chi, tu→tsu (irregular!)',cat:'hiragana'},
+  {jp:'ka, ga (Dakuten)',en:'KA → GA (voiced)',tip:'Small mark = voiced sound',cat:'hiragana'},
+  {jp:'kite, kitte',en:'Kitte vs Kite',tip:'Small っ = pause/double consonant',cat:'hiragana'},
+  {jp:'obasan, obaasan',en:'Aunt vs Grandmother',tip:'Long vowel = completely different word!',cat:'hiragana'},
+  {jp:'chichi, otousan',en:'Father (my/their) — chichi / otōsan',tip:'Your family = simple, others = polite',cat:'family'},
+  {jp:'haha, okaasan',en:'Mother (my/their) — haha / okāsan',tip:'Your family = simple, others = polite',cat:'family'},
+  {jp:'ani, oniisan',en:'Older brother — ani / oniisan',tip:'Ani = your, Oniisan = theirs',cat:'family'},
+  {jp:'otouto, imouto',en:'Younger brother/sister — otōto / imōto',tip:'No polite version for younger siblings',cat:'family'},
+  {jp:'kao, atama',en:'Face — kao · Head — atama',tip:'Body: karada',cat:'family'},
+  {jp:'oyayubi',en:'Thumb — oyayubi',tip:'親 = parent; thumb is the "parent finger"',cat:'family'},
+  {jp:'mimi, kuchi',en:'Ear — mimi · Mouth — kuchi',tip:'Common body part vocab',cat:'family'},
+  {jp:'Watashi wa gakusei desu',en:'I am a student',tip:'Basic sentence: N1 wa N2 desu',cat:'grammar'},
+  {jp:'Tanaka-san wa gakusei dewa arimasen',en:'Mr. Tanaka is not a student',tip:'Negative: dewa arimasen',cat:'grammar'},
+  {jp:'Sentence + ka',en:'Question form',tip:'Add ka at end = question!',cat:'grammar'},
+  {jp:'N1 no N2',en:'N2 of N1',tip:'no shows belonging/relationship',cat:'grammar'},
+  {jp:'hitori, futari',en:'1 person / 2 people',tip:'Irregular! (not ichi-nin / ni-nin)',cat:'grammar'},
+  {jp:'hatachi',en:'20 years old',tip:'Irregular age! (not ni-jussai)',cat:'grammar'},
+];
+
+let currentCards = [...flashcardData];
+let currentCardIndex = 0;
+let knownCards = new Set();
+let laterCards = new Set();
+let isFlipped = false;
+
+function initFlashcards() { loadProgress(); renderCard(); }
+
+function filterCards(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCards = cat === 'all' ? [...flashcardData] : flashcardData.filter(c => c.cat === cat);
+  currentCardIndex = 0; isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  renderCard();
+}
+
+function renderCard() {
+  if (!currentCards.length) return;
+  const c = currentCards[currentCardIndex];
+  document.getElementById('fc-tag').textContent = c.cat.charAt(0).toUpperCase() + c.cat.slice(1);
+  document.getElementById('fc-jp').textContent = c.jp;
+  document.getElementById('fc-meaning').textContent = c.en;
+  document.getElementById('fc-tip').textContent = c.tip;
+  document.getElementById('fc-counter').textContent = `Card ${currentCardIndex + 1} of ${currentCards.length}`;
+  const pct = ((currentCardIndex + 1) / currentCards.length) * 100;
+  document.getElementById('fc-progress').style.width = pct + '%';
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  updateFCStats();
+  // Auto-speak on card load
+  setTimeout(() => speakText(c.jp), 300);
+}
+
+function speakCurrentCard() {
+  const c = currentCards[currentCardIndex];
+  if (c) speakText(c.jp);
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+  if (isFlipped) {
+    const c = currentCards[currentCardIndex];
+    if (c) setTimeout(() => speakText(c.jp), 200);
+  }
+}
+
+function markCard(type) {
+  const c = currentCards[currentCardIndex];
+  if (type === 'know') { knownCards.add(c.jp); laterCards.delete(c.jp); showToast('✅ Marked as known!'); }
+  else { laterCards.add(c.jp); knownCards.delete(c.jp); showToast('🔁 Added to review later'); }
+  saveProgress(); nextCard();
+}
+
+function nextCard() {
+  if (currentCardIndex < currentCards.length - 1) { currentCardIndex++; renderCard(); }
+  else { currentCardIndex = 0; renderCard(); showToast('🎉 Completed! Starting over...'); }
+}
+
+function updateFCStats() {
+  document.getElementById('fc-known-count').textContent = knownCards.size + ' known';
+  document.getElementById('fc-later-count').textContent = laterCards.size + ' to review';
+}
+
+// ============================
+// QUIZ DATA
+// ============================
+const quizBank = {
+  classroom: [
+    {q:'What does "Hajimemashou" mean?',jp:'Hajimemashou',opts:["Let's start","Let's finish","Let's continue","Stand up"],ans:0},
+    {q:'Which phrase means "Speak slowly"?',opts:['Yukkuri itte kudasai','Ookii koe de itte kudasai','Isshoni itte kudasai','Mou ichido onegaishimasu'],ans:0},
+    {q:'What does "kudasai" mean?',opts:['Let\'s','Please','Thank you','Sorry'],ans:1},
+    {q:'What does "-mashou" indicate?',opts:['A question','Please do','Let\'s do something','An action'],ans:2},
+    {q:'Which means "Submit homework"?',opts:['Shukudai o dashite kudasai','~peeji o akete kudasai','Shizuka ni shite kudasai','Chotto matte kudasai'],ans:0},
+    {q:'What does "Wakarimashita ka?" mean?',opts:['Do you understand?','Are you okay?','How are you?','Any questions?'],ans:0},
+    {q:'Which phrase means "Be quiet"?',opts:['Shizuka ni shite kudasai','Chotto matte kudasai','Tatte kudasai','Suwatte kudasai'],ans:0},
+  ],
+  greetings: [
+    {q:'What does "Ohayou gozaimasu" mean?',opts:['Good morning','Good afternoon','Good evening','Good night'],ans:0},
+    {q:'Which phrase is used BEFORE eating?',opts:['Itadakimasu','Gochisousama deshita','Otsukaresama deshita','Ittekimasu'],ans:0},
+    {q:'What does "Tadaima" mean?',opts:["I'm back","I'm leaving","Take care","Welcome back"],ans:0},
+    {q:'"Itterasshai" is said to someone who is...?',opts:['Leaving','Returning','Eating','Working'],ans:0},
+    {q:'What does "Odaijini" mean?',opts:['Get well soon','Thank you','Good luck','Be quiet'],ans:0},
+    {q:'Which is a WORKPLACE phrase?',opts:['Otsukaresama deshita','Itadakimasu','Hajimemashite','Oyasuminasai'],ans:0},
+    {q:'What does "Hajimemashite" mean?',opts:['Nice to meet you','Good morning','See you','Thank you'],ans:0},
+  ],
+  vocab: [
+    {q:'Your father (talking about YOUR dad) is...?',opts:['ちち (chichi)','おとうさん (otōsan)','そふ (sofu)','あに (ani)'],ans:0},
+    {q:'"おばあさん (obāsan)" means...?',opts:['Grandmother (other\'s)','Aunt','Mother','Older sister'],ans:0},
+    {q:'What body part is "あたま (atama)"?',opts:['Head','Face','Hand','Ear'],ans:0},
+    {q:'"おやゆび (oyayubi)" is which finger?',opts:['Thumb','Index','Middle','Ring'],ans:0},
+    {q:'"ひざ (hiza)" means...?',opts:['Knee','Stomach','Shoulder','Arm'],ans:0},
+    {q:'The polite rule for family: your family uses ___',opts:['Simple words','Polite prefix お','Polite prefix ご','Either'],ans:0},
+    {q:'"いもうと (imōto)" means...?',opts:['Younger sister','Older sister','Wife','Daughter'],ans:0},
+    {q:'What is "くち (kuchi)"?',opts:['Mouth','Ear','Nose','Eye'],ans:0},
+    {q:'"みみ (mimi)" means...?',opts:['Ear','Eye','Face','Nose'],ans:0},
+  ],
+  grammar: [
+    {q:'Basic pattern: N1 ___ N2 desu',opts:['wa','no','mo','ka'],ans:0},
+    {q:'How do you make a sentence negative?',opts:['dewa arimasen','desu ka','mo desu','no desu'],ans:0},
+    {q:'"N1 no N2" means...?',opts:['N2 of N1','N1 is N2','N1 also N2','N1 or N2'],ans:0},
+    {q:'"hatachi" means how old?',opts:['20 years old','18 years old','10 years old','30 years old'],ans:0},
+    {q:'"hitori" and "futari" are irregular for...?',opts:['1 and 2 people','1 and 2 years old','1st and 2nd','None of above'],ans:0},
+    {q:'Particle "mo" (も) means...?',opts:['Also / Too','Belonging','Question','Topic'],ans:0},
+    {q:'~san (さん) should NEVER be used for...?',opts:['Yourself','Your teacher','Other people','Friends'],ans:0},
+    {q:'1000 in Japanese is...?',opts:['sen','hyaku','man','jyuu'],ans:0},
+  ],
+};
+
+let quizState = { chapter:'all', diff:'easy', timer:'none', questions:[], current:0, correct:0, wrong:0, timerInterval:null, timeLeft:30 };
+const quizOpts = { chapter:'all', diff:'easy', timer:'none' };
+
+function selectOpt(btn, type) {
+  document.querySelectorAll(`[data-type="${type}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  quizOpts[type] = btn.dataset.val;
+}
+
+function generateQuestions(chapter, diff) {
+  let pool = [];
+  if (chapter === 'all') { Object.values(quizBank).forEach(arr => pool.push(...arr)); }
+  else { pool = quizBank[chapter] || []; }
+  pool = pool.sort(() => Math.random() - 0.5);
+  const count = diff === 'easy' ? 8 : diff === 'medium' ? 12 : 16;
+  return pool.slice(0, Math.min(count, pool.length));
+}
+
+function startQuiz() {
+  quizState.chapter = quizOpts.chapter; quizState.diff = quizOpts.diff; quizState.timer = quizOpts.timer;
+  quizState.questions = generateQuestions(quizState.chapter, quizState.diff);
+  quizState.current = 0; quizState.correct = 0; quizState.wrong = 0;
+  document.getElementById('quiz-setup-screen').classList.add('hidden');
+  document.getElementById('quiz-active-screen').classList.remove('hidden');
+  document.getElementById('quiz-results-screen').classList.add('hidden');
+  renderQuestion();
+}
+
+function startRandomQuiz() { navigate('quiz'); quizOpts.chapter = 'all'; quizOpts.diff = 'medium'; quizOpts.timer = 'none'; setTimeout(startQuiz, 100); }
+
+function renderQuestion() {
+  const q = quizState.questions[quizState.current];
+  const total = quizState.questions.length;
+  document.getElementById('quiz-progress-text').textContent = `Question ${quizState.current + 1} of ${total}`;
+  document.getElementById('quiz-bar-fill').style.width = `${(quizState.current / total) * 100}%`;
+  document.getElementById('q-type').textContent = q.jp ? 'Meaning' : 'Knowledge';
+
+  // Make JP in question clickable to speak
+  if (q.jp) {
+    document.getElementById('q-text').innerHTML = q.q + `<span class="jp" onclick="speakText('${q.jp}')" title="Click to hear pronunciation">${q.jp} 🔊</span>`;
+  } else {
+    document.getElementById('q-text').innerHTML = q.q;
+  }
+
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('feedback-box').classList.remove('show','correct','wrong');
+
+  const grid = document.getElementById('options-grid');
+  const labels = ['A','B','C','D'];
+  grid.innerHTML = q.opts.map((opt, i) => `
+    <button class="option-btn" onclick="answerQuestion(${i})">
+      <span class="opt-label">${labels[i]}</span>
+      ${opt}
+    </button>
+  `).join('');
+
+  if (quizState.timerInterval) clearInterval(quizState.timerInterval);
+  if (quizState.timer !== 'none') {
+    const badge = document.getElementById('timer-badge');
+    badge.style.display = 'flex';
+    quizState.timeLeft = parseInt(quizState.timer);
+    document.getElementById('timer-display').textContent = quizState.timeLeft;
+    quizState.timerInterval = setInterval(() => {
+      quizState.timeLeft--;
+      document.getElementById('timer-display').textContent = quizState.timeLeft;
+      if (quizState.timeLeft <= 0) { clearInterval(quizState.timerInterval); timeoutQuestion(); }
+    }, 1000);
+  } else {
+    document.getElementById('timer-badge').style.display = 'none';
+  }
+
+  // Auto-speak the JP word in quiz
+  if (q.jp) setTimeout(() => speakText(q.jp), 400);
+}
+
+function timeoutQuestion() {
+  const q = quizState.questions[quizState.current];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((b, i) => { b.disabled = true; if (i === q.ans) b.classList.add('correct'); });
+  quizState.wrong++;
+  showFeedback(false, `⏰ Time's up! Answer: ${q.opts[q.ans]}`);
+  document.getElementById('next-btn').style.display = 'flex';
+}
+
+function answerQuestion(idx) {
+  if (quizState.timerInterval) clearInterval(quizState.timerInterval);
+  const q = quizState.questions[quizState.current];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  const isCorrect = idx === q.ans;
+  btns[idx].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) btns[q.ans].classList.add('correct');
+  if (isCorrect) quizState.correct++; else quizState.wrong++;
+  showFeedback(isCorrect, isCorrect ? '✅ Correct!' : `❌ Correct answer: ${q.opts[q.ans]}`);
+  document.getElementById('next-btn').style.display = 'flex';
+  if (q.jp) setTimeout(() => speakText(q.opts[q.ans]), 400);
+}
+
+function showFeedback(ok, msg) {
+  const fb = document.getElementById('feedback-box');
+  fb.textContent = msg;
+  fb.classList.remove('correct','wrong');
+  fb.classList.add('show', ok ? 'correct' : 'wrong');
+}
+
+function nextQuestion() {
+  if (quizState.current < quizState.questions.length - 1) { quizState.current++; renderQuestion(); }
+  else { showResults(); }
+}
+
+function showResults() {
+  document.getElementById('quiz-active-screen').classList.add('hidden');
+  document.getElementById('quiz-results-screen').classList.remove('hidden');
+  const total = quizState.questions.length;
+  const pct = Math.round((quizState.correct / total) * 100);
+  document.getElementById('score-inner').textContent = pct + '%';
+  document.getElementById('score-circle').style.setProperty('--pct', `${pct * 3.6}deg`);
+  document.getElementById('res-correct').textContent = quizState.correct;
+  document.getElementById('res-wrong').textContent = quizState.wrong;
+  document.getElementById('res-total').textContent = total;
+  const perf = pct >= 90 ? ['Excellent!','Outstanding work!','perf-excellent'] : pct >= 70 ? ['Good Job!','Keep it up!','perf-good'] : pct >= 50 ? ['Average','Keep studying!','perf-average'] : ['Keep Going!','More practice needed','perf-poor'];
+  document.getElementById('results-title').textContent = perf[0];
+  document.getElementById('results-sub').textContent = perf[1];
+  const badge = document.getElementById('perf-badge');
+  badge.className = 'performance-badge ' + perf[2];
+  badge.textContent = pct + '% Score';
+  saveQuizResult(pct);
+}
+
+function retryQuiz() {
+  quizState.questions = generateQuestions(quizState.chapter, quizState.diff);
+  quizState.current = 0; quizState.correct = 0; quizState.wrong = 0;
+  document.getElementById('quiz-results-screen').classList.add('hidden');
+  document.getElementById('quiz-active-screen').classList.remove('hidden');
+  renderQuestion();
+}
+
+function showQuizSetup() {
+  document.getElementById('quiz-results-screen').classList.add('hidden');
+  document.getElementById('quiz-active-screen').classList.add('hidden');
+  document.getElementById('quiz-setup-screen').classList.remove('hidden');
+}
+
+// ============================
+// QUICK STUDY MODES
+// ============================
+function startQuickRevision() { navigate('flashcards'); showToast('⚡ Quick Revision Mode: Focus on key phrases!'); }
+function startExamFocus() {
+  navigate('quiz'); quizOpts.chapter = 'all'; quizOpts.diff = 'hard'; quizOpts.timer = '30';
+  setTimeout(startQuiz, 100); showToast('🎯 Exam Focus Mode: Hard + Timer enabled!');
+}
+
+// ============================
+// LOCAL STORAGE
+// ============================
+function saveProgress() {
+  const prog = { known: [...knownCards], later: [...laterCards], streak: getStreak(), lastVisit: new Date().toDateString() };
+  localStorage.setItem('jpLearnProgress', JSON.stringify(prog));
+}
+
+function saveQuizResult(score) {
+  const results = JSON.parse(localStorage.getItem('jpQuizResults') || '[]');
+  results.unshift({ score, date: new Date().toLocaleDateString(), chapter: quizState.chapter });
+  if (results.length > 10) results.pop();
+  localStorage.setItem('jpQuizResults', JSON.stringify(results));
+  updateStreak();
+}
+
+function loadProgress() {
+  const prog = JSON.parse(localStorage.getItem('jpLearnProgress') || '{}');
+  knownCards = new Set(prog.known || []);
+  laterCards = new Set(prog.later || []);
+  updateFCStats();
+}
+
+function getStreak() {
+  const prog = JSON.parse(localStorage.getItem('jpLearnProgress') || '{}');
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (prog.lastVisit === today) return prog.streak || 1;
+  if (prog.lastVisit === yesterday) return (prog.streak || 0) + 1;
+  return 1;
+}
+
+function updateStreak() {
+  const prog = JSON.parse(localStorage.getItem('jpLearnProgress') || '{}');
+  prog.streak = getStreak(); prog.lastVisit = new Date().toDateString();
+  localStorage.setItem('jpLearnProgress', JSON.stringify(prog));
+}
+
+function resetProgress() {
+  if (!confirm('Reset all progress? This cannot be undone.')) return;
+  localStorage.removeItem('jpLearnProgress'); localStorage.removeItem('jpQuizResults');
+  knownCards.clear(); laterCards.clear();
+  showToast('Progress reset!'); updateDashboard(); updateFCStats();
+}
+
+// ============================
+// DASHBOARD
+// ============================
+function updateDashboard() {
+  loadProgress();
+  const results = JSON.parse(localStorage.getItem('jpQuizResults') || '[]');
+  const prog = JSON.parse(localStorage.getItem('jpLearnProgress') || '{}');
+  document.getElementById('streak-display').textContent = (prog.streak || 0) + ' days';
+  const total = flashcardData.length;
+  const known = knownCards.size;
+  const pct = total ? Math.round((known / total) * 100) : 0;
+  document.getElementById('fc-mastery-pct').textContent = pct + '%';
+  document.getElementById('fc-mastery-bar').style.width = pct + '%';
+  document.getElementById('fc-known-total').textContent = known;
+  document.getElementById('fc-total-total').textContent = total;
+  const best = results.length ? Math.max(...results.map(r => r.score)) : null;
+  document.getElementById('best-score-display').textContent = best !== null ? best + '%' : '—';
+  const cats = ['classroom','greetings','hiragana','grammar'];
+  cats.forEach(cat => {
+    const catCards = flashcardData.filter(c => c.cat === cat);
+    const knownInCat = catCards.filter(c => knownCards.has(c.jp)).length;
+    const catPct = catCards.length ? Math.round((knownInCat / catCards.length) * 100) : 0;
+    const fill = document.getElementById('cp-' + cat);
+    const pctEl = document.getElementById('cp-' + cat + '-pct');
+    if (fill) fill.style.width = catPct + '%';
+    if (pctEl) pctEl.textContent = catPct + '%';
+  });
+  const hist = document.getElementById('score-history');
+  if (results.length) {
+    hist.innerHTML = results.map(r => `
+      <li class="sh-item">
+        <span>${r.chapter === 'all' ? 'Mixed' : r.chapter.charAt(0).toUpperCase() + r.chapter.slice(1)} · ${r.date}</span>
+        <span class="sh-score">${r.score}%</span>
+      </li>
+    `).join('');
+  } else {
+    hist.innerHTML = '<li class="sh-item" style="color:var(--gray);font-style:italic;">No quiz results yet. Take a quiz to see your scores!</li>';
+  }
+}
+
+// ============================
+// INIT
+// ============================
+window.addEventListener('load', () => { updateStreak(); loadProgress(); });
+</script>
+</body>
+</html>
