@@ -1,4 +1,4 @@
-# 🇯🇵 Japanese Learning Hub
+# Japanese Learning Hub
 
 Japanese Learning Hub is a modern, interactive web platform built to help users learn the Japanese language effectively. It combines clean UI design with engaging learning methods to make studying Hiragana, Katakana, vocabulary, and grammar simple and enjoyable.
 
@@ -17,7 +17,7 @@ Japanese Learning Hub is a modern, interactive web platform built to help users 
 
 ---
 
-## 🎯 هدف / Purpose
+## 🎯 Purpose
 
 The goal of this project is to provide an accessible and user-friendly platform for anyone who wants to start learning Japanese without overwhelming complexity.
 
@@ -31,8 +31,7 @@ It is designed especially for:
 ## 🛠️ Tech Stack
 
 - **Frontend:** HTML, CSS, JavaScript
-- **Framework:** (Add if used — e.g. React / Next.js)
-- **Styling:** Tailwind CSS / Custom CSS
+- **Styling:** Custom CSS
 - **Deployment:** Vercel
 
 ---
